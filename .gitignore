@@ -1,0 +1,16 @@
+# Planning & Claude Notes
+FILES AND PLAN MADE BY CLAUDE/
+BATTLE_STATION.html
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# OpenEnv & Project
+.pytest_cache/
+pytest_error.txt
+pytest_log.txt
+*.log
