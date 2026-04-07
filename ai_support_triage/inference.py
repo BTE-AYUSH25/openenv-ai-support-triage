@@ -4,21 +4,28 @@
 import os
 import json
 import logging
+from openai import OpenAI
 from ai_support_triage.client import AiSupportTriageEnv
 from ai_support_triage.models import SupportAction, Category, Priority, EscalationTarget, TicketStatus
 
 # Silent logging for baseline output
 logging.basicConfig(level=logging.WARNING)
 
-def get_openai_client():
-    from openai import OpenAI
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        print("WARNING: OPENAI_API_KEY not set. Using mock predictions to prevent failure.")
-        return None
-    return OpenAI(api_key=api_key)
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo-1106")
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-def call_llm(openai_client, observation) -> dict:
+# Optional - if you use from_docker_image():
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+
+def get_openai_client():
+    api_key = os.environ.get("OPENAI_API_KEY", HF_TOKEN)
+    if not api_key:
+        print("WARNING: API Key not set. Using mock predictions to prevent failure.")
+        return None
+    return OpenAI(base_url=API_BASE_URL, api_key=api_key)
+
+def call_llm(openai_client: OpenAI, observation) -> dict:
     if not openai_client:
         return {} # mock empty logic handled outside
     
@@ -35,7 +42,7 @@ def call_llm(openai_client, observation) -> dict:
     
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model=MODEL_NAME,
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": prompt}
@@ -59,8 +66,8 @@ def run_baseline(base_url: str = "http://localhost:7860"):
     # Initialize OpenAI Client (Rule 6: Reads from env)
     try:
         openai_client = get_openai_client()
-    except ImportError:
-        print("WARNING: 'openai' package not installed. Using mock predictions.")
+    except Exception as e:
+        print(f"WARNING: Exception initializing OpenAI: {e}. Using mock predictions.")
         openai_client = None
     
     # Evaluate across 3 difficulty levels

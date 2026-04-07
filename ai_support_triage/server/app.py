@@ -113,7 +113,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # --- Gradio UI Battle Station ---
 def create_ui():
-    with gr.Blocks(title="AI Support Triage Explorer", css=".gradio-container {background-color: #0b0e14}") as demo:
+    with gr.Blocks(title="AI Support Triage Explorer") as demo:
         gr.Markdown("# 🚀 AI Support Triage - Legendary Mission Control")
         
         with gr.Tabs():
@@ -142,20 +142,20 @@ def create_ui():
                                         "account_access",
                                         "high",
                                         "none",
-                                        "in_progress"
+                                        "pending_customer"
                                     ],
                                     [
                                         "Your refund has been processed and will appear in 3-5 days.",
                                         "billing",
-                                        "medium",
+                                        "normal",
                                         "none",
                                         "resolved"
                                     ],
                                     [
                                         "I am escalating this bug to the technical team right away.",
-                                        "technical_issue",
+                                        "technical",
                                         "high",
-                                        "tier_2",
+                                        "tier_2_tech",
                                         "escalated"
                                     ]
                                 ],
