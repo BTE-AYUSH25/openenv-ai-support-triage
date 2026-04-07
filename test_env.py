@@ -22,14 +22,14 @@ def test_easy_grading_logic():
     
     # Correct action
     action = SupportAction(
-        response_draft="Here is your reset link.",
+        response_draft="Hello! I understand you're having trouble with your password. I'm happy to help. Here is your reset link. Best regards, Support Team.",
         assigned_category=Category.ACCOUNT_ACCESS,
         assigned_priority=Priority.LOW,
         escalated_to=EscalationTarget.NONE,
         new_status=TicketStatus.RESOLVED
     )
     obs = env.step(action)
-    assert obs.reward == 1.0 # Perfect classification
+    assert obs.reward > 0.95 # Perfect classification + EQ
 
 def test_medium_grading_keywords():
     """Verify keyword and routing grading for medium tasks."""
@@ -39,17 +39,19 @@ def test_medium_grading_keywords():
     
     # Action with required keywords but suboptimal priority
     action = SupportAction(
-        response_draft="I apologize for the overcharge. I will issue a refund and escalate to my manager.",
+        response_draft="Hi there, I apologize for the overcharge. I understand this is frustrating. I will issue a refund and escalate to my manager. Best, Team.",
         assigned_category=Category.BILLING,
         assigned_priority=Priority.NORMAL, # Task expects HIGH
         escalated_to=EscalationTarget.MANAGER,
         new_status=TicketStatus.ESCALATED
     )
     obs = env.step(action)
-    # 0.1 (cat) + 0.0 (prio) + 0.3 (routing) + 0.5 (keywords: apologize, refund, escalate, manager)
-    # "sorry" is missing from keywords but 4/5 present. 0.5 * 0.8 = 0.4
-    # 0.1 + 0.3 + 0.4 = 0.8
-    assert 0.7 <= obs.reward <= 0.9
+    # Triage: 0.1 (cat) + 0.0 (prio) = 0.1
+    # Routing: 0.3
+    # EQ: ~1.0. 1.0 * 0.15 = 0.15
+    # Keywords: all present. 1.0 * 0.15 = 0.15
+    # Total: 0.1 + 0.3 + 0.15 + 0.15 = 0.7
+    assert 0.6 <= obs.reward <= 0.8
 
 def test_hard_decoy_penalty():
     """Verify that falling for legal decoys results in a lower score."""
@@ -59,7 +61,7 @@ def test_hard_decoy_penalty():
     
     # Fails by escalating to legal without demanding authorization (Rule 8/23 constraint)
     action = SupportAction(
-        response_draft="I've escalated your legal threat to our lawyers. I can reset it now.",
+        response_draft="Hello, I've escalated your legal threat to our lawyers. I can reset it now. Regards.",
         assigned_category=Category.TECHNICAL,
         assigned_priority=Priority.CRITICAL,
         escalated_to=EscalationTarget.LEGAL, # Decoy: Legal threat should NOT be escalated immediately
@@ -67,6 +69,7 @@ def test_hard_decoy_penalty():
     )
     obs = env.step(action)
     assert obs.reward < 0.5
+
 def test_legendary_logic():
     """Verify that the agent correctly handles Article 20 vs Article 17 conflict."""
     env = AiSupportTriageEnvironment()
@@ -75,7 +78,7 @@ def test_legendary_logic():
     
     # Correct action: Mention Article 20 and handle Legal Hold
     action = SupportAction(
-        response_draft="We have received your GDPR request. Note Article 20 (Data Portability) must be fulfilled before erasure. Also, activity logs are on legal hold due to an open dispute.",
+        response_draft="Dear Customer, I understand you wish to exercise your GDPR rights. Note Article 20 (Data Portability) must be fulfilled before erasure. Also, activity logs are on legal hold due to an open dispute. Thank you for your patience.",
         assigned_category=Category.OTHER,
         assigned_priority=Priority.NORMAL,
         escalated_to=EscalationTarget.LEGAL,

@@ -31,8 +31,6 @@ dependencies = [
     # "smolagents>=1.22.0,<2",
     "psutil>=5.9.0",
     "python-dotenv>=1.0.0",
-    "gradio",
-    "jinja2",
 ]
 
 [project.optional-dependencies]

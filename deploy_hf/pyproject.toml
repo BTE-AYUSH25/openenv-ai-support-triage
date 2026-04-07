@@ -31,8 +31,6 @@ dependencies = [
     # "smolagents>=1.22.0,<2",
     "psutil>=5.9.0",
     "python-dotenv>=1.0.0",
-    "gradio",
-    "jinja2",
 ]
 
 [project.optional-dependencies]
@@ -45,9 +43,9 @@ dev = [
 [project.scripts]
 # Server entry point - enables running via: uv run --project . server
 # or: python -m ai_support_triage.server.app
-server = "ai_support_triage.server.app:main"
+server = "server.app:main"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["ai_support_triage", "ai_support_triage.server"]
-package-dir = { "ai_support_triage" = ".", "ai_support_triage.server" = "server" }
+packages = ["ai_support_triage", "server"]
+package-dir = { "" = "." }
